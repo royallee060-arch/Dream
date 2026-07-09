@@ -373,10 +373,10 @@ function buildTab(){
  return h;
 }
 function rosterTable(){
- var rows=[];data.people.forEach(function(p){p.characters.forEach(function(c){rows.push({p:p,c:c})})});
+ var rows=[];data.people.forEach(function(p){p.characters.forEach(function(c){rows.push({p:p,c:c})})});var _bl=allBosses();
  var h='<div class="card"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div><div class="lbl" style="font-weight:700;color:#fff">Player Database</div><div class="hint">Google Sheet for <a href="https://docs.google.com/spreadsheets/d/1ZHdzvwW88_cqxtqAvN5J1T-5wB02N58GPbVC95KxlM0/edit?gid=0#gid=0" target="_blank" rel="noreferrer" style="color:var(--amber2);text-decoration:underline">Player Database</a></div></div><div style="display:flex;flex-wrap:wrap;gap:6px"><button class="btn btn-amber" data-a="syncSheet">Sync from Google Sheet</button></div></div>';
- h+='<div style="overflow-x:auto"><table class="rowlines" style="min-width:720px"><thead><tr><th style="width:44px;color:#fff">Done</th><th style="color:#fff">Person</th><th style="color:#fff">Character</th><th style="color:#fff">Priority</th><th style="color:#fff">Job</th><th style="color:#fff">Class</th><th style="color:#fff">Skills</th><th style="color:#fff">Boss Availability</th></tr></thead><tbody>';
- if(!rows.length)h+='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px;font-size:13px">No characters yet — click Sync from Google Sheet.</td></tr>';
+ h+='<div style="overflow-x:auto"><table class="rowlines" style="min-width:720px"><thead><tr><th style="width:44px;color:#fff">Done</th><th style="color:#fff">Person</th><th style="color:#fff">Character</th><th style="color:#fff">Priority</th><th style="color:#fff">Job</th><th style="color:#fff">Class</th><th style="color:#fff">Skills</th>'+_bl.map(function(b){return '<th style="color:#fff;text-align:center;white-space:nowrap">'+esc(b)+'</th>'}).join("")+'</tr></thead><tbody>';
+ if(!rows.length)h+='<tr><td colspan="'+(7+_bl.length)+'" style="text-align:center;color:var(--muted);padding:20px;font-size:13px">No characters yet — click Sync from Google Sheet.</td></tr>';
  rows.forEach(function(r){var p=r.p,c=r.c;var ro=c.jobId?' readonly title="Set by the job — edit it in Job rules"':'';var rs=c.jobId?'opacity:.55;cursor:not-allowed':'';
   h+='<tr style="'+(c.done?"opacity:.5":"")+'">';
   h+='<td style="text-align:center;vertical-align:middle"><input type="checkbox" class="rcdone" data-p="'+p.id+'" data-c="'+c.id+'"'+(c.done?" checked":"")+' style="width:16px;height:16px;accent-color:var(--amber);cursor:pointer"/></td>';
@@ -386,7 +386,7 @@ function rosterTable(){
   h+='<td style="color:#fbbf24;white-space:nowrap">'+(c.jobId&&jobById[c.jobId]?esc(jobById[c.jobId].name):"\u2014")+'</td>';
   h+='<td style="color:#cbd5e1;white-space:nowrap">'+(c.jobId&&jobById[c.jobId]&&jobById[c.jobId].cls?esc(jobById[c.jobId].cls):"\u2014")+'</td>';
   h+=skillsCell(p,c);
-  h+=bossCell(p,c);
+  var _have={};(c.bosses||[]).forEach(function(b){_have[b.toLowerCase()]=1});_bl.forEach(function(b){h+='<td style="text-align:center;color:#2dd4bf;font-size:14px">'+(_have[b.toLowerCase()]?"\u2713":"")+'</td>'});
   h+='</tr>';
  });
  h+='</tbody></table></div><div class="hint" style="margin-top:10px">'+data.people.length+' people · '+rows.length+' characters · '+data.jobs.length+' jobs · '+data.skills.length+' skills</div></div>';
