@@ -226,6 +226,7 @@ function removeSkillGlobal(sid){data.skills=data.skills.filter(function(s){retur
 function isLocked(idx,pid,cid){return (st.locks[idx]||[]).some(function(m){return m.personId===pid&&m.characterId===cid})}
 function toggleLock(idx,pid,cid){var arr=(st.locks[idx]||[]).slice();var i=arr.findIndex(function(m){return m.personId===pid&&m.characterId===cid});if(i>=0){arr.splice(i,1)}else{arr=arr.filter(function(m){return m.personId!==pid});arr.push({personId:pid,characterId:cid})}st.locks[idx]=arr}
 function applyRoster(d){data=d;reindex();st.locks={};st.completed={};st.benched=new Set();st.result=null;st.required=[];st.requiredJobs=[];save()}
+function syncFromSheet(){var url="https://docs.google.com/spreadsheets/d/1kjWKo3kmy5aY9X9_Atd8bah2IKiMMonGLkMteakiNV0/gviz/tq?tqx=out:csv&gid=0";var btn=null;qsa('[data-a="syncSheet"]').forEach(function(b){btn=b});if(btn){btn.textContent="Syncing\u2026";btn.style.opacity=".6";}fetch(url).then(function(r){if(!r.ok)throw new Error("http");return r.text()}).then(function(t){if(importRosterKeepJobs(t)){render();}else{alert("Synced, but couldn\u2019t read any rows. Make sure the sheet has Person and Character columns.");if(btn){btn.textContent="Sync from Google Sheet";btn.style.opacity="1";}}}).catch(function(){alert("Couldn\u2019t reach the Google Sheet.\nMake sure it\u2019s shared as \u201cAnyone with the link can view\u201d.");if(btn){btn.textContent="Sync from Google Sheet";btn.style.opacity="1";}});}
 function importRosterKeepJobs(text){
  var rows=csvParse(text||"");if(!rows.length)return false;
  var header=rows[0].map(function(h){return norm(h).toLowerCase()});
@@ -365,7 +366,7 @@ function buildTab(){
 }
 function rosterTable(){
  var rows=[];data.people.forEach(function(p){p.characters.forEach(function(c){rows.push({p:p,c:c})})});
- var h='<div class="card"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div><div class="lbl" style="font-weight:700;color:#fff">Player Database</div><div class="hint">Google Sheet for <a href="https://docs.google.com/spreadsheets/d/1kjWKo3kmy5aY9X9_Atd8bah2IKiMMonGLkMteakiNV0/edit?gid=0#gid=0" target="_blank" rel="noreferrer" style="color:var(--amber2);text-decoration:underline">Player Database</a></div></div><div style="display:flex;flex-wrap:wrap;gap:6px"><button class="btn" data-a="exportCsv">Download CSV</button><button class="btn" data-a="importCsv">Upload CSV</button><button class="btn btn-amber" data-a="addRow">+ Add row</button></div></div>';
+ var h='<div class="card"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px"><div><div class="lbl" style="font-weight:700;color:#fff">Player Database</div><div class="hint">Google Sheet for <a href="https://docs.google.com/spreadsheets/d/1kjWKo3kmy5aY9X9_Atd8bah2IKiMMonGLkMteakiNV0/edit?gid=0#gid=0" target="_blank" rel="noreferrer" style="color:var(--amber2);text-decoration:underline">Player Database</a></div></div><div style="display:flex;flex-wrap:wrap;gap:6px"><button class="btn btn-amber" data-a="syncSheet">Sync from Google Sheet</button></div></div>';
  h+='<div style="overflow-x:auto"><table style="min-width:720px"><thead><tr><th style="width:44px;color:#fff">Done</th><th style="color:#fff">Person</th><th style="color:#fff">Character</th><th style="color:#fff">Priority</th><th style="color:#fff">Job</th><th style="color:#fff">Skills</th><th style="color:#fff">Boss Availability</th><th></th></tr></thead><tbody>';
  if(!rows.length)h+='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px;font-size:13px">No characters yet. Add a row to start.</td></tr>';
  rows.forEach(function(r){var p=r.p,c=r.c;var ro=c.jobId?' readonly title="Set by the job — edit it in Job rules"':'';var rs=c.jobId?'opacity:.55;cursor:not-allowed':'';
@@ -467,6 +468,7 @@ function wire(){
 }
 function act(a){
  if(a==="exportCsv")exportCSV();
+ else if(a==="syncSheet")syncFromSheet();
  else if(a==="exportJson")exportJSON();
  else if(a==="importCsv")byId("fileCsv").click();
  else if(a==="importJson")byId("fileJson").click();
